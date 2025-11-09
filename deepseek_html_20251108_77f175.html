@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>拼音打字练习 - Pinyin Typing Practice</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            margin-top: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.2rem;
+        }
+        
+        .instructions {
+            background-color: #e8f4fc;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-left: 5px solid #3498db;
+        }
+        
+        .instructions h2 {
+            color: #2980b9;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .pinyin-display {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.8rem;
+            color: #e74c3c;
+            font-weight: bold;
+            letter-spacing: 2px;
+            border: 2px dashed #bdc3c7;
+        }
+        
+        .english-meaning {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #7f8c8d;
+            font-style: italic;
+            margin-top: 5px;
+        }
+        
+        .typing-area {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .input-container {
+            position: relative;
+        }
+        
+        #chinese-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.5rem;
+            border: 2px solid #3498db;
+            border-radius: 10px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        #chinese-input:focus {
+            border-color: #2980b9;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3);
+        }
+        
+        #chinese-input.error {
+            border-color: #e74c3c;
+            background-color: #ffeaea;
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            font-size: 1rem;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .error-message.show {
+            display: block;
+        }
+        
+        .progress-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+        
+        .progress-bar {
+            flex-grow: 1;
+            height: 10px;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            margin: 0 15px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #2ecc71, #1abc9c);
+            width: 0%;
+            transition: width 0.5s;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #ecf0f1;
+        }
+        
+        .stat-box {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        #check-btn {
+            background: linear-gradient(135deg, #2ecc71, #1abc9c);
+            color: white;
+            flex: 2;
+        }
+        
+        #check-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
+        }
+        
+        #next-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            flex: 1;
+            display: none;
+        }
+        
+        #next-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+        
+        .result {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .result.correct {
+            background-color: #d5f4e6;
+            color: #27ae60;
+            display: block;
+        }
+        
+        .result.incorrect {
+            background-color: #fadbd8;
+            color: #e74c3c;
+            display: block;
+        }
+        
+        .character-highlight {
+            background-color: #ffeaa7;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+        
+        .character-error {
+            background-color: #ff7675;
+            color: white;
+            padding: 2px 4px;
+            border-radius: 4px;
+            text-decoration: underline;
+        }
+        
+        footer {
+            margin-top: 30px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .pinyin-display {
+                font-size: 1.5rem;
+            }
+            
+            #chinese-input {
+                font-size: 1.2rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>拼音打字练习</h1>
+            <p class="subtitle">Pinyin Typing Practice Game</p>
+        </header>
+        
+        <div class="instructions">
+            <h2>游戏说明 / Game Instructions</h2>
+            <ul>
+                <li>根据显示的拼音输入对应的中文句子 / Type the Chinese sentence based on the Pinyin displayed</li>
+                <li>注意标点符号的正确使用 / Pay attention to correct punctuation</li>
+                <li>如果输入错误，错误的字符会被标记，需要重新输入 / If you make a mistake, the incorrect characters will be marked and you need to retype</li>
+                <li>只有完全正确才能进入下一题 / Only when completely correct can you proceed to the next question</li>
+            </ul>
+        </div>
+        
+        <div class="game-area">
+            <div class="pinyin-display" id="pinyin-display">wǒ xiǎng zuò yī shēng。</div>
+            <div class="english-meaning" id="english-meaning">I want to be a doctor.</div>
+            
+            <div class="typing-area">
+                <div class="input-container">
+                    <input type="text" id="chinese-input" placeholder="在这里输入中文句子... / Type Chinese sentence here..." autocomplete="off">
+                    <div class="error-message" id="error-message">输入有误，请检查并重新输入 / Input error, please check and retype</div>
+                </div>
+                
+                <div class="progress-container">
+                    <span id="current-progress">1</span>
+                    <div class="progress-bar">
+                        <div class="progress" id="progress-bar"></div>
+                    </div>
+                    <span id="total-questions">7</span>
+                </div>
+            </div>
+            
+            <div class="result" id="result-message"></div>
+            
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-value" id="correct-count">0</div>
+                    <div class="stat-label">正确 / Correct</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="incorrect-count">0</div>
+                    <div class="stat-label">错误 / Incorrect</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="completion-rate">0%</div>
+                    <div class="stat-label">完成率 / Completion</div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button id="check-btn">检查答案 / Check Answer</button>
+                <button id="next-btn">下一题 / Next</button>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>拼音打字练习游戏 - 提高中文打字技能 / Pinyin Typing Practice Game - Improve Your Chinese Typing Skills</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 句子数据 / Sentence data
+            const sentences = [
+                {
+                    pinyin: "wǒ xiǎng zuò yī shēng。",
+                    chinese: "我想做医生。",
+                    english: "I want to be a doctor."
+                },
+                {
+                    pinyin: "wǒ xiǎng zuò lǎo shī。",
+                    chinese: "我想做老师。",
+                    english: "I want to be a teacher."
+                },
+                {
+                    pinyin: "wǒ xiǎng zuò yǎn yuán。",
+                    chinese: "我想做演员。",
+                    english: "I want to be an actor."
+                },
+                {
+                    pinyin: "wǒ xiǎng zuò chú shī。",
+                    chinese: "我想做厨师。",
+                    english: "I want to be a chef."
+                },
+                {
+                    pinyin: "wǒ xiǎng zuò jǐng chá。",
+                    chinese: "我想做警察。",
+                    english: "I want to be a police officer."
+                },
+                {
+                    pinyin: "wǒ xiǎng zuò gōng chéng shī。",
+                    chinese: "我想做工程师。",
+                    english: "I want to be an engineer."
+                },
+                {
+                    pinyin: "nǐ xiǎng zuò shén me？",
+                    chinese: "你想做什么？",
+                    english: "What do you want to be?"
+                }
+            ];
+            
+            // 游戏状态 / Game state
+            let currentSentenceIndex = 0;
+            let correctAnswers = 0;
+            let incorrectAnswers = 0;
+            
+            // DOM元素 / DOM elements
+            const pinyinDisplay = document.getElementById('pinyin-display');
+            const englishMeaning = document.getElementById('english-meaning');
+            const chineseInput = document.getElementById('chinese-input');
+            const errorMessage = document.getElementById('error-message');
+            const resultMessage = document.getElementById('result-message');
+            const checkBtn = document.getElementById('check-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const progressBar = document.getElementById('progress-bar');
+            const currentProgress = document.getElementById('current-progress');
+            const totalQuestions = document.getElementById('total-questions');
+            const correctCount = document.getElementById('correct-count');
+            const incorrectCount = document.getElementById('incorrect-count');
+            const completionRate = document.getElementById('completion-rate');
+            
+            // 初始化游戏 / Initialize game
+            function initGame() {
+                totalQuestions.textContent = sentences.length;
+                updateProgress();
+                loadSentence();
+                
+                // 事件监听器 / Event listeners
+                checkBtn.addEventListener('click', checkAnswer);
+                nextBtn.addEventListener('click', nextSentence);
+                
+                chineseInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        checkAnswer();
+                    }
+                });
+                
+                chineseInput.addEventListener('input', function() {
+                    // 清除错误状态当用户开始输入时 / Clear error state when user starts typing
+                    if (chineseInput.classList.contains('error')) {
+                        chineseInput.classList.remove('error');
+                        errorMessage.classList.remove('show');
+                        resultMessage.classList.remove('incorrect');
+                        resultMessage.style.display = 'none';
+                    }
+                });
+            }
+            
+            // 加载当前句子 / Load current sentence
+            function loadSentence() {
+                const currentSentence = sentences[currentSentenceIndex];
+                pinyinDisplay.textContent = currentSentence.pinyin;
+                englishMeaning.textContent = currentSentence.english;
+                chineseInput.value = '';
+                chineseInput.focus();
+                
+                // 重置UI状态 / Reset UI state
+                chineseInput.classList.remove('error');
+                errorMessage.classList.remove('show');
+                resultMessage.className = 'result';
+                resultMessage.style.display = 'none';
+                nextBtn.style.display = 'none';
+                checkBtn.style.display = 'block';
+            }
+            
+            // 检查答案 / Check answer
+            function checkAnswer() {
+                const userInput = chineseInput.value.trim();
+                const correctAnswer = sentences[currentSentenceIndex].chinese;
+                
+                if (userInput === correctAnswer) {
+                    // 答案正确 / Answer is correct
+                    correctAnswers++;
+                    resultMessage.textContent = "正确！ / Correct!";
+                    resultMessage.className = 'result correct';
+                    resultMessage.style.display = 'block';
+                    nextBtn.style.display = 'block';
+                    checkBtn.style.display = 'none';
+                } else {
+                    // 答案错误 / Answer is incorrect
+                    incorrectAnswers++;
+                    chineseInput.classList.add('error');
+                    errorMessage.classList.add('show');
+                    
+                    // 找出错误的字符 / Find incorrect characters
+                    let errorIndices = [];
+                    const minLength = Math.min(userInput.length, correctAnswer.length);
+                    
+                    for (let i = 0; i < minLength; i++) {
+                        if (userInput[i] !== correctAnswer[i]) {
+                            errorIndices.push(i);
+                        }
+                    }
+                    
+                    // 如果用户输入比正确答案短，标记缺失的字符 / If user input is shorter than correct answer, mark missing characters
+                    if (userInput.length < correctAnswer.length) {
+                        for (let i = userInput.length; i < correctAnswer.length; i++) {
+                            errorIndices.push(i);
+                        }
+                    }
+                    
+                    // 如果用户输入比正确答案长，标记多余的字符 / If user input is longer than correct answer, mark extra characters
+                    if (userInput.length > correctAnswer.length) {
+                        for (let i = correctAnswer.length; i < userInput.length; i++) {
+                            errorIndices.push(i);
+                        }
+                    }
+                    
+                    // 显示错误信息 / Show error message
+                    let errorMessageText = "输入有误，请检查并重新输入 / Input error, please check and retype";
+                    
+                    if (errorIndices.length > 0) {
+                        errorMessageText += "<br>错误位置 / Error positions: ";
+                        
+                        // 创建带有错误高亮的文本 / Create text with error highlighting
+                        let highlightedText = "";
+                        for (let i = 0; i < correctAnswer.length; i++) {
+                            if (errorIndices.includes(i)) {
+                                highlightedText += `<span class="character-error">${correctAnswer[i]}</span>`;
+                            } else {
+                                highlightedText += `<span class="character-highlight">${correctAnswer[i]}</span>`;
+                            }
+                        }
+                        
+                        errorMessageText += `<div style="margin-top: 10px; font-size: 1.2rem;">${highlightedText}</div>`;
+                    }
+                    
+                    errorMessage.innerHTML = errorMessageText;
+                    resultMessage.textContent = "不正确，请重试 / Incorrect, please try again";
+                    resultMessage.className = 'result incorrect';
+                    resultMessage.style.display = 'block';
+                }
+                
+                updateStats();
+            }
+            
+            // 下一题 / Next sentence
+            function nextSentence() {
+                currentSentenceIndex++;
+                
+                if (currentSentenceIndex >= sentences.length) {
+                    // 游戏结束 / Game completed
+                    currentSentenceIndex = 0;
+                    correctAnswers = 0;
+                    incorrectAnswers = 0;
+                    
+                    // 显示完成消息 / Show completion message
+                    alert("恭喜！你已完成所有练习。 / Congratulations! You have completed all exercises.");
+                }
+                
+                updateProgress();
+                loadSentence();
+            }
+            
+            // 更新进度 / Update progress
+            function updateProgress() {
+                const progress = ((currentSentenceIndex) / sentences.length) * 100;
+                progressBar.style.width = `${progress}%`;
+                currentProgress.textContent = currentSentenceIndex + 1;
+            }
+            
+            // 更新统计信息 / Update statistics
+            function updateStats() {
+                correctCount.textContent = correctAnswers;
+                incorrectCount.textContent = incorrectAnswers;
+                
+                const totalAttempts = correctAnswers + incorrectAnswers;
+                const rate = totalAttempts > 0 ? Math.round((correctAnswers / totalAttempts) * 100) : 0;
+                completionRate.textContent = `${rate}%`;
+            }
+            
+            // 启动游戏 / Start the game
+            initGame();
+        });
+    </script>
+</body>
+</html>
